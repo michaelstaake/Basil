@@ -4,6 +4,8 @@
 
 [github.com/michaelstaake/Basil](https://github.com/michaelstaake/Basil)
 
+Versioning is year, month, then build version.
+
 ## Get Started
 
 Grab the latest `Basil-<version>-setup.exe` (installer) or
