@@ -1,10 +1,16 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
 const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
+
+// Resolve the local CLI so this works when invoked via `node` (CI) as well as
+// `npm run` (which puts node_modules/.bin on PATH).
+const electronBuilderCli = require.resolve('electron-builder/cli.js');
 
 /**
  * electron-builder extracts Electron into release/win-unpacked.tmp and renames it
@@ -55,9 +61,9 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   removeStaleDirs();
 
   const result = spawnSync(
-    'electron-builder',
-    [...process.argv.slice(2), `-c.buildVersion=${buildVersion}`],
-    { stdio: 'inherit', shell: true, cwd: root },
+    process.execPath,
+    [electronBuilderCli, ...process.argv.slice(2), `-c.buildVersion=${buildVersion}`],
+    { stdio: 'inherit', cwd: root },
   );
 
   status = result.status ?? 1;

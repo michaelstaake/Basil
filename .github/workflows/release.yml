@@ -47,9 +47,10 @@ jobs:
           key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
 
       - name: Build portable and setup EXEs
-        run: npx vite build && node scripts/with-build-version.mjs --win --publish never
+        # --publish never: on tagged commits electron-builder otherwise tries to
+        # publish and fails without GH_TOKEN. Assets are uploaded via gh below.
+        run: npm run build -- --publish never
         env:
-          # Avoid electron-builder trying to publish; we upload assets below.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
 
       - name: Upload assets to release
