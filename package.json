@@ -1,7 +1,7 @@
 {
   "name": "basil",
-  "version": "26.7.23.1",
-  "description": "A fast, simple, customizable text editor for Windows with optional AI assistance",
+  "version": "26.7.1",
+  "description": "Basil Text Editor",
   "author": "Michael Staake",
   "license": "GPL-3.0-or-later",
   "private": true,
