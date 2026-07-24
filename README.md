@@ -4,7 +4,7 @@
 
 [github.com/michaelstaake/Basil](https://github.com/michaelstaake/Basil)
 
-Versioning is year, month, then build version.
+Versioning is year, month, then build.
 
 ## Get Started
 
