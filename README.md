@@ -2,7 +2,6 @@
 
 **Basil** is an intuitive text editor for Windows with optional AI assistance. Open source and free!
 
-Version **26.7.1** · License **GPL-3.0**
 [github.com/michaelstaake/Basil](https://github.com/michaelstaake/Basil)
 
 ## Get Started
