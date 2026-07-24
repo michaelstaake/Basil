@@ -47,7 +47,7 @@ jobs:
           key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
 
       - name: Build portable and setup EXEs
-        run: npm run build
+        run: npx vite build && node scripts/with-build-version.mjs --win --publish never
         env:
           # Avoid electron-builder trying to publish; we upload assets below.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
