@@ -1,0 +1,103 @@
+{
+  "name": "basil",
+  "version": "26.7.23.1",
+  "description": "A fast, simple, customizable text editor for Windows with optional AI assistance",
+  "author": "Michael Staake",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "homepage": "https://github.com/michaelstaake/Basil",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michaelstaake/Basil.git"
+  },
+  "bugs": {
+    "url": "https://github.com/michaelstaake/Basil/issues"
+  },
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/with-build-version.mjs --win",
+    "build:dir": "vite build && node scripts/with-build-version.mjs --win dir",
+    "icons": "node scripts/generate-icons.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "//dependencies": "Everything the app uses at runtime is bundled into dist/ by Vite, so there are no production dependencies. Anything listed here would be packed into app.asar a second time.",
+  "dependencies": {},
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@fontsource/google-sans": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/ubuntu": "^5.3.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@types/node": "^22.15.30",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^15.15.0",
+    "lucide-react": "^0.525.0",
+    "monaco-editor": "^0.52.2",
+    "png-to-ico": "^2.1.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sharp": "^0.35.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.65.0",
+    "vite": "^6.3.5",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "vitest": "^3.2.7"
+  },
+  "build": {
+    "appId": "com.basil.editor",
+    "productName": "Basil",
+    "copyright": "Michael Staake",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "!node_modules/**"
+    ],
+    "asar": true,
+    "afterPack": "scripts/after-pack.mjs",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "Basil-${version}-portable.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "Basil-${version}-setup.${ext}"
+    }
+  }
+}

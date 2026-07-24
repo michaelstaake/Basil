@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Basil">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2f6b3a"/>
+      <stop offset="100%" stop-color="#1e4a28"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- document page -->
+  <rect x="118" y="96" width="220" height="300" rx="18" fill="#f4f7f2"/>
+  <rect x="150" y="150" width="156" height="14" rx="7" fill="#9bb39a"/>
+  <rect x="150" y="186" width="140" height="14" rx="7" fill="#9bb39a"/>
+  <rect x="150" y="222" width="160" height="14" rx="7" fill="#9bb39a"/>
+  <rect x="150" y="258" width="120" height="14" rx="7" fill="#9bb39a"/>
+  <rect x="150" y="294" width="148" height="14" rx="7" fill="#9bb39a"/>
+  <!-- caret -->
+  <rect x="150" y="330" width="4" height="28" rx="2" fill="#2f6b3a"/>
+  <!-- basil leaf -->
+  <g transform="translate(250 180) rotate(-18)">
+    <path d="M20 140 C20 60 90 10 150 8 C130 70 110 110 20 140 Z" fill="#7ed18a"/>
+    <path d="M20 140 C55 100 95 55 150 8" fill="none" stroke="#1e4a28" stroke-width="8" stroke-linecap="round"/>
+    <path d="M55 105 C75 95 95 70 110 45" fill="none" stroke="#2f6b3a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M40 120 C60 112 78 95 92 78" fill="none" stroke="#2f6b3a" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>
