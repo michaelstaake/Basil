@@ -25,6 +25,8 @@ At this time, the executables are not signed, so you may receive Windows SmartSc
 - If enabled, each file gets its own AI context that can assist you. AI features are specifically designed to be read-only so you always remain in complete control.
 - Basil comes packaged with a portable version, or install it for convenient features like "Open with Basil" context menu, system tray persistence, etc. Alternately, you may build it from source.
 
+Hint: Click the Basil logo in the toolbar to access settings and more features.
+
 ## Requirements
 
 - Windows 10/11
