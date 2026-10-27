@@ -34,7 +34,7 @@ jobs:
           $tag = '${{ github.event.release.tag_name }}'
           $version = $tag -replace '^v', ''
           if ($version -notmatch '^\d+\.\d+\.\d+') {
-            throw "Release tag '$tag' must be a semver version (e.g. 26.7.1 or v26.7.1)."
+            throw "Release tag '$tag' must be a semver version (e.g. 26.10.1 or v26.10.1)."
           }
           npm version $version --no-git-tag-version --allow-same-version
           Write-Host "Building as version $version"
@@ -94,7 +94,7 @@ jobs:
           tag="${{ github.event.release.tag_name }}"
           version="${tag#v}"
           if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-            echo "Release tag '$tag' must be a semver version (e.g. 26.7.1 or v26.7.1)." >&2
+            echo "Release tag '$tag' must be a semver version (e.g. 26.10.1 or v26.10.1)." >&2
             exit 1
           fi
           npm version "$version" --no-git-tag-version --allow-same-version

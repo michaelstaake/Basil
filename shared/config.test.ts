@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AI_PRESETS,
   DEFAULT_AI,
   DEFAULT_PREFERENCES,
   DEFAULT_TOOLBAR,
@@ -106,9 +107,24 @@ describe('resolveAiBaseUrl', () => {
     expect(resolveAiBaseUrl({ ...DEFAULT_AI, preset: 'lmstudio' })).toBe(
       'http://localhost:1234/v1',
     );
+    expect(resolveAiBaseUrl({ ...DEFAULT_AI, preset: 'napa' })).toBe(
+      'https://gateway-api.napa-ai.com/v1',
+    );
     expect(resolveAiBaseUrl({ ...DEFAULT_AI, preset: 'xai' })).toBe(
       'https://api.x.ai/v1',
     );
+  });
+
+  it('lists built-in presets as LM Studio, Napa AI Gateway, then xAI/SpaceXSI', () => {
+    expect(Object.keys(AI_PRESETS)).toEqual(['lmstudio', 'napa', 'xai']);
+    expect(AI_PRESETS.napa).toEqual({
+      label: 'Napa AI Gateway',
+      baseUrl: 'https://gateway-api.napa-ai.com/v1',
+      model: 'grok-3',
+    });
+    expect(AI_PRESETS.napa).not.toHaveProperty('apiKey');
+    expect(AI_PRESETS.xai.label).toBe('xAI/SpaceXSI');
+    expect(AI_PRESETS.lmstudio.label).toBe('LM Studio');
   });
 
   it('uses the configured url for the custom preset', () => {
@@ -129,9 +145,11 @@ describe('isAiConfigured', () => {
     expect(isAiConfigured({ ...DEFAULT_AI, preset: 'lmstudio', apiKey: '' })).toBe(true);
   });
 
-  it('requires a key for xai', () => {
+  it('requires a key for xai and napa', () => {
     expect(isAiConfigured({ ...DEFAULT_AI, preset: 'xai', apiKey: '' })).toBe(false);
     expect(isAiConfigured({ ...DEFAULT_AI, preset: 'xai', apiKey: 'k' })).toBe(true);
+    expect(isAiConfigured({ ...DEFAULT_AI, preset: 'napa', apiKey: '' })).toBe(false);
+    expect(isAiConfigured({ ...DEFAULT_AI, preset: 'napa', apiKey: 'k' })).toBe(true);
   });
 
   it('requires a key for a remote custom endpoint but not a local one', () => {
@@ -166,6 +184,19 @@ describe('normalizeAiConfig', () => {
 
   it('replaces an unknown preset with the default', () => {
     expect(normalizeAiConfig({ preset: 'bogus' }).preset).toBe(DEFAULT_AI.preset);
+  });
+
+  it('keeps the napa preset', () => {
+    const result = normalizeAiConfig({
+      preset: 'napa',
+      baseUrl: AI_PRESETS.napa.baseUrl,
+      apiKey: '',
+      model: AI_PRESETS.napa.model,
+      systemPrompt: DEFAULT_AI.systemPrompt,
+    });
+    expect(result.preset).toBe('napa');
+    expect(result.baseUrl).toBe('https://gateway-api.napa-ai.com/v1');
+    expect(result.apiKey).toBe('');
   });
 
   it('keeps valid values', () => {

@@ -4,7 +4,7 @@
 
 [github.com/michaelstaake/Basil](https://github.com/michaelstaake/Basil)
 
-Versioning is year, month, then build.
+Versioning is year, month, then build. The current release is 26.10.1.
 
 ## Get Started
 
@@ -29,7 +29,7 @@ sudo apt install ./Basil-<version>-amd64.deb
 - Dark mode and light mode -the default is to detect the correct theme based on your system preferences.
 - Automatically detects correct encoding and line endings.
 - Compare your current file state to the original file state with git-style diff feature.
-- Optional AI features - compatible with any OpenAI API-compatible provider or service, including LM Studio, LmPanel, OpenRouter, xAI, etc.
+- Optional AI features, off until you turn them on in Settings. Compatible with any OpenAI API-compatible provider or service, including LM Studio, Napa AI Gateway, xAI/SpaceXSI, and custom endpoints such as LmPanel or OpenRouter.
 - If enabled, each file gets its own AI context that can assist you. AI features are specifically designed to be read-only so you always remain in complete control.
 - Basil comes packaged with a portable version, or install it for convenient features like "Open with Basil" context menu, system tray persistence, etc. The Ubuntu `.deb` adds an applications-menu entry and Open With for common text files. Alternately, you may build it from source.
 
@@ -120,8 +120,11 @@ System light and dark mode on Linux follows Electron's `nativeTheme` (the GTK / 
 | Preset | Default base URL |
 |--------|------------------|
 | LM Studio | `http://localhost:1234/v1` |
-| xAI | `https://api.x.ai/v1` |
+| Napa AI Gateway | `https://gateway-api.napa-ai.com/v1` |
+| xAI/SpaceXSI | `https://api.x.ai/v1` |
 | Custom | whatever you set |
+
+AI is off on a fresh install. Turn on **Enable AI integration** in Settings to use a preset. A saved choice in `preferences.json` is kept.
 
 Use **Test connection** in Settings to check an endpoint. If you start your model
 server after Basil, the AI controls appear when the window regains focus.

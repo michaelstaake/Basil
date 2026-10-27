@@ -306,8 +306,11 @@ export function SettingsPane({ preferences, aiConfig, onSave }: Props) {
                   disabled={!prefs.aiEnabled}
                   onChange={(e) => applyPreset(e.target.value as AiPreset)}
                 >
-                  <option value="lmstudio">LM Studio</option>
-                  <option value="xai">xAI</option>
+                  {(Object.keys(AI_PRESETS) as Array<keyof typeof AI_PRESETS>).map((id) => (
+                    <option key={id} value={id}>
+                      {AI_PRESETS[id].label}
+                    </option>
+                  ))}
                   <option value="custom">Custom</option>
                 </select>
               </div>
