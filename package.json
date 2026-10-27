@@ -155,7 +155,7 @@
       "packageCategory": "editors",
       "priority": "optional",
       "depends": [
-        "libc6 (>= 2.35)",
+        "libc6 (>= 2.25)",
         "libgtk-3-0t64 | libgtk-3-0",
         "libglib2.0-0t64 | libglib2.0-0",
         "libatk1.0-0t64 | libatk1.0-0",
@@ -177,6 +177,7 @@
         "libxrandr2",
         "libxss1",
         "libxtst6",
+        "libudev1",
         "libsecret-1-0",
         "libuuid1",
         "xdg-utils"

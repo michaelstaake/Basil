@@ -76,7 +76,7 @@ The Linux package is a separate command. `npm run build` still writes the Window
 npm run build:deb
 ```
 
-Writes `release/Basil-<version>-amd64.deb` (Debian package name `basil`, executable `/usr/bin/basil`). Run it on Linux. electron-builder shells out to `dpkg` and `fakeroot` to assemble the package. The `.deb` depends on the Ubuntu 26.04 library names (`libgtk-3-0t64` and the other `t64` packages), with the older names as alternatives where those still exist. Ubuntu 26.04 ships glibc 2.43, which satisfies the package's libc requirement. The only Linux target is this `.deb`.
+Writes `release/Basil-<version>-amd64.deb` (Debian package name `basil`, executable `/usr/bin/basil`). Run it on Linux. electron-builder shells out to `dpkg` and `fakeroot` to assemble the package. The `.deb` depends on the Ubuntu 26.04 library names (`libgtk-3-0t64` and the other `t64` packages), with the older names as alternatives where those still exist. It also depends on glibc 2.25 or newer, which Ubuntu 26.04 (glibc 2.43) satisfies, and on `libudev1`, which the Electron binary links directly. The only Linux target is this `.deb`.
 
 Everything the app needs at runtime is bundled into `dist/` by Vite, so
 `package.json` has **no production dependencies**. Adding one would ship it a
