@@ -128,7 +128,8 @@ export function resolveEditorFontFamily(id: EditorFontId): string {
 
 export const DEFAULT_PREFERENCES: Preferences = {
   theme: 'system',
-  aiEnabled: true,
+  // Off until the user opts in. A saved true or false is kept.
+  aiEnabled: false,
   wordWrap: true,
   indentGuides: true,
   highlightCurrentLine: true,
@@ -179,6 +180,8 @@ export function normalizePreferences(raw: Partial<Preferences> & Record<string, 
     ...DEFAULT_PREFERENCES,
     ...rest,
     theme: normalizeTheme(rest.theme) ?? DEFAULT_PREFERENCES.theme,
+    aiEnabled:
+      typeof rest.aiEnabled === 'boolean' ? rest.aiEnabled : DEFAULT_PREFERENCES.aiEnabled,
     wordWrap: typeof rest.wordWrap === 'boolean' ? rest.wordWrap : DEFAULT_PREFERENCES.wordWrap,
     indentGuides:
       typeof rest.indentGuides === 'boolean'

@@ -17,6 +17,14 @@ import {
 describe('normalizePreferences', () => {
   it('returns defaults for an empty object', () => {
     expect(normalizePreferences({})).toEqual(DEFAULT_PREFERENCES);
+    expect(DEFAULT_PREFERENCES.aiEnabled).toBe(false);
+  });
+
+  it('keeps an explicit aiEnabled and defaults when the key is missing', () => {
+    expect(normalizePreferences({}).aiEnabled).toBe(false);
+    expect(normalizePreferences({ aiEnabled: true }).aiEnabled).toBe(true);
+    expect(normalizePreferences({ aiEnabled: false }).aiEnabled).toBe(false);
+    expect(normalizePreferences({ aiEnabled: 'yes' as never }).aiEnabled).toBe(false);
   });
 
   it('rejects an invalid theme and falls back to the default', () => {
