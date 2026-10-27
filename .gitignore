@@ -21,7 +21,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Local environment and secrets.
-# Basil keeps its API key in %USERPROFILE%\.basil\ai.json, outside the repo, but
+# Basil keeps its API key in %USERPROFILE%\.basil\ai.json (or ~/.basil/ai.json), outside the repo, but
 # never let a stray local env file be committed.
 .env
 .env.*

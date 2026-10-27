@@ -1,6 +1,6 @@
 # Basil
 
-**Basil** is an intuitive text editor for Windows with optional AI assistance. Open source and free!
+**Basil** is an intuitive text editor for Windows, with a `.deb` package for Ubuntu 26.04 and newer, and optional AI assistance. Open source and free!
 
 [github.com/michaelstaake/Basil](https://github.com/michaelstaake/Basil)
 
@@ -14,6 +14,14 @@ Grab the latest `Basil-<version>-setup.exe` (installer) or
 
 At this time, the executables are not signed, so you may receive Windows SmartScreen warnings. Choose run anyway, or build from source using the steps below (refer to Build section of this document).
 
+On Ubuntu 26.04 or newer (x64), install the `.deb` the same way:
+
+```bash
+sudo apt install ./Basil-<version>-amd64.deb
+```
+
+`apt` pulls in GTK and the other libraries the package depends on. Basil then shows up in the applications menu, and under **Open With** for common text files. The current default text editor stays as it is.
+
 ## Features
 - Built on Monaco editor, which powers popular applications like VS Code.
 - Powerful yet easy handling of multiple files with tabs.
@@ -23,14 +31,14 @@ At this time, the executables are not signed, so you may receive Windows SmartSc
 - Compare your current file state to the original file state with git-style diff feature.
 - Optional AI features - compatible with any OpenAI API-compatible provider or service, including LM Studio, LmPanel, OpenRouter, xAI, etc.
 - If enabled, each file gets its own AI context that can assist you. AI features are specifically designed to be read-only so you always remain in complete control.
-- Basil comes packaged with a portable version, or install it for convenient features like "Open with Basil" context menu, system tray persistence, etc. Alternately, you may build it from source.
+- Basil comes packaged with a portable version, or install it for convenient features like "Open with Basil" context menu, system tray persistence, etc. The Ubuntu `.deb` adds an applications-menu entry and Open With for common text files. Alternately, you may build it from source.
 
 Hint: Click the Basil logo in the toolbar to access settings and more features.
 
 ## Requirements
 
-- Windows 10/11
-- Node.js 22+ (if building from source - otherwise you can just run the included portable or setup executables)
+- Windows 10/11, or Ubuntu 26.04+ (x64) for the `.deb`
+- Node.js 22+ (if building from source - otherwise you can just run the included portable or setup executables, or install the `.deb`)
 
 
 ## Development
@@ -50,7 +58,8 @@ Other scripts:
 | `npm run typecheck` | TypeScript, no emit |
 | `npm run lint` | ESLint |
 | `npm test` | Unit tests (Vitest) |
-| `npm run icons` | Regenerate `build/icon.png` and `build/icon.ico` from `build/icon.svg` |
+| `npm run build:deb` | Linux `.deb` for x64 (`release/Basil-<version>-amd64.deb`) |
+| `npm run icons` | Regenerate `build/icon.png`, `build/icon.ico`, and `build/icons/` from `build/icon.svg` |
 
 ## Build
 
@@ -61,6 +70,14 @@ npm run build
 Writes `release/Basil-<version>-portable.exe` and `release/Basil-<version>-setup.exe`.
 Use `npm run build:dir` for an unpacked build without installers.
 
+The Linux package is a separate command. `npm run build` still writes the Windows executables above.
+
+```bash
+npm run build:deb
+```
+
+Writes `release/Basil-<version>-amd64.deb` (Debian package name `basil`, executable `/usr/bin/basil`). Run it on Linux. electron-builder shells out to `dpkg` and `fakeroot` to assemble the package. The `.deb` depends on the Ubuntu 26.04 library names (`libgtk-3-0t64` and the other `t64` packages), with the older names as alternatives where those still exist. Ubuntu 26.04 ships glibc 2.43, which satisfies the package's libc requirement. The only Linux target is this `.deb`.
+
 Everything the app needs at runtime is bundled into `dist/` by Vite, so
 `package.json` has **no production dependencies**. Adding one would ship it a
 second time inside `app.asar` — keep new libraries in `devDependencies` unless
@@ -68,9 +85,11 @@ they genuinely need to be loaded from disk at runtime.
 
 ## Configuration
 
-On first launch Basil creates a hidden folder in your home directory:
+On first launch Basil creates a folder in your home directory:
 
-`%USERPROFILE%\.basil\`
+`%USERPROFILE%\.basil\` on Windows, `~/.basil/` on Linux.
+
+On Windows that folder is marked hidden. On Linux the leading dot is what hides it.
 
 | File | Purpose |
 |------|---------|
@@ -79,9 +98,22 @@ On first launch Basil creates a hidden folder in your home directory:
 | `session.json` | Files to reopen on next launch |
 | `logs\main.log` | Main-process log, including crashes |
 
-The API key is encrypted with the Windows credential store (DPAPI) and stored as
+The API key is encrypted with the OS keystore (Windows DPAPI, or the Secret Service on Linux) and stored as
 `apiKeyEnc`. A file that cannot be parsed is renamed with a `.corrupt-<timestamp>`
-suffix and Basil starts with defaults rather than failing to launch.
+suffix and Basil starts with defaults rather than failing to launch. When a Linux Secret Service is available, the key is encrypted with it. Otherwise Basil stores the key in the file so the setting is kept.
+
+### Linux startup
+
+"Start with boot" on Linux writes `~/.config/autostart/com.basil.editor.desktop` (or `$XDG_CONFIG_HOME/autostart/` when that variable is set). Electron's login-item API does not run on Linux, so this is a normal XDG autostart file. It launches `/opt/Basil/basil --hidden`, the same hidden start the Windows Run key uses. Desktops that honor that directory (GNOME, KDE, XFCE, and other freedesktop sessions) will start Basil in the tray.
+
+A few limits:
+
+- A session that ignores `autostart` will not launch Basil at login.
+- The tray icon is a PNG. It needs a StatusNotifier host. Ubuntu's desktop includes one (`libayatana-appindicator3-1` is a recommended package). A minimal session with no tray still starts Basil hidden, with no window to click. Turn the setting off, or delete the autostart file, and open Basil from the menu.
+- The package install leaves that file alone, and removing the `.deb` leaves it in place. `TryExec` points at the binary, so a removed install is skipped on later logins.
+- `npm run dev` removes this file so a dev Electron binary stays off the login list. The Windows NSIS login item is unchanged.
+
+System light and dark mode on Linux follows Electron's `nativeTheme` (the GTK / portal setting).
 
 ### AI presets
 
