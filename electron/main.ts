@@ -54,9 +54,21 @@ import { decode, detectEncoding, normalizeEncoding } from '../shared/encoding';
 import { capChatHistory } from '../shared/ai';
 import type { LineEnding } from '../shared/text';
 import { getMtimeMs, readTextFile, writeTextFile } from './file-io';
+import {
+  LINUX_DESKTOP_NAME,
+  linuxAutostartDesktopPath,
+  renderLinuxAutostartDesktop,
+  shouldHideBasilDir,
+  trayIconCandidates,
+} from './host-platform';
 import { initLogger, installGlobalErrorHandlers } from './logger';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+if (process.platform === 'linux') {
+  // Match the installed com.basil.editor.desktop (package.json desktopName).
+  app.setDesktopName(LINUX_DESKTOP_NAME);
+}
 
 const windows = new Map<number, BrowserWindow>();
 /** Windows allowed to close without asking the renderer. */
@@ -340,7 +352,35 @@ function clearLoginItem(name: string): void {
   });
 }
 
+function applyLinuxAutostart(): void {
+  // setLoginItemSettings is macOS and Windows only. Login startup on Linux is
+  // a per-user XDG autostart file. Limits are documented in the README.
+  const target = linuxAutostartDesktopPath(app.getPath('home'), process.env.XDG_CONFIG_HOME);
+  try {
+    // Unpackaged dev runs must not register node_modules/electron, and must
+    // drop a stale entry the way the Windows Run key is cleared.
+    if (!app.isPackaged || !preferences.startWithBoot) {
+      fsSync.rmSync(target, { force: true });
+      return;
+    }
+    const contents = renderLinuxAutostartDesktop({
+      execPath: process.execPath,
+      hidden: true,
+    });
+    if (fsSync.existsSync(target) && fsSync.readFileSync(target, 'utf8') === contents) return;
+    fsSync.mkdirSync(path.dirname(target), { recursive: true });
+    fsSync.writeFileSync(target, contents, { encoding: 'utf8', mode: 0o644 });
+  } catch (err) {
+    console.error('[basil] could not update the Linux autostart entry:', err);
+  }
+}
+
 function applyLoginItemSettings(): void {
+  if (process.platform === 'linux') {
+    applyLinuxAutostart();
+    return;
+  }
+
   // Drop legacy duplicates so boot never launches Basil twice (second instance
   // would focus the main window) and so stale electron.exe Run entries die.
   for (const name of LEGACY_LOGIN_ITEM_NAMES) {
@@ -362,23 +402,40 @@ function applyLoginItemSettings(): void {
   });
 }
 
+function loadTrayIconFromFiles(): Electron.NativeImage {
+  const candidates = trayIconCandidates(process.platform, {
+    devIco: path.join(__dirname, '../build/icon.ico'),
+    devPng: path.join(__dirname, '../build/icon.png'),
+    resourceIco: path.join(process.resourcesPath, 'icon.ico'),
+    resourcePng: path.join(process.resourcesPath, 'icon.png'),
+  });
+  for (const candidate of candidates) {
+    if (!fsSync.existsSync(candidate)) continue;
+    const image = nativeImage.createFromPath(candidate);
+    if (!image.isEmpty()) return image;
+  }
+  return nativeImage.createEmpty();
+}
+
 async function ensureTray(): Promise<void> {
   if (tray) return;
 
   let icon = nativeImage.createEmpty();
-  try {
-    icon = await app.getFileIcon(process.execPath, { size: 'small' });
-  } catch {
-    const candidates = [
-      path.join(__dirname, '../build/icon.ico'),
-      path.join(__dirname, '../build/icon.png'),
-      path.join(process.resourcesPath, 'icon.ico'),
-    ];
-    for (const candidate of candidates) {
-      if (fsSync.existsSync(candidate)) {
-        icon = nativeImage.createFromPath(candidate);
-        if (!icon.isEmpty()) break;
+  if (process.platform === 'linux') {
+    // getFileIcon is Windows/macOS-oriented and may return an empty image.
+    // The tray wants the packaged PNG.
+    icon = loadTrayIconFromFiles();
+    if (!icon.isEmpty()) {
+      const { width, height } = icon.getSize();
+      if (width > 32 || height > 32) {
+        icon = icon.resize({ width: 24, height: 24 });
       }
+    }
+  } else {
+    try {
+      icon = await app.getFileIcon(process.execPath, { size: 'small' });
+    } catch {
+      icon = loadTrayIconFromFiles();
     }
   }
 
@@ -512,6 +569,7 @@ function getBasilDir(): string {
 }
 
 async function hideBasilDir(dir: string): Promise<void> {
+  if (!shouldHideBasilDir(process.platform)) return;
   try {
     const { execFile } = await import('node:child_process');
     const { promisify } = await import('node:util');
@@ -527,6 +585,9 @@ async function hideBasilDir(dir: string): Promise<void> {
  * blocks the main process, and this is consulted on every theme read, every
  * window creation and every broadcast — so it is refreshed only when Windows
  * actually reports a theme change.
+ *
+ * Off Windows the probe is skipped (`null`) and the system theme comes from
+ * Electron's nativeTheme, which tracks the GTK / portal preference on Linux.
  */
 let cachedAppsPreferDark: boolean | null | undefined;
 
@@ -688,7 +749,8 @@ async function savePreferences(next: Preferences): Promise<void> {
 
 /**
  * The API key is a real credential, so it is encrypted at rest with the OS
- * keystore (DPAPI on Windows) rather than sitting in plaintext in ai.json.
+ * keystore (DPAPI on Windows, the Secret Service via libsecret on Linux)
+ * rather than sitting in plaintext in ai.json.
  * Files written by older versions still hold `apiKey` and are migrated on load.
  */
 function hasEncryptedKey(raw: unknown): boolean {
