@@ -55,7 +55,7 @@ export type Preferences = {
   };
 };
 
-export type AiPreset = 'lmstudio' | 'xai' | 'custom';
+export type AiPreset = 'lmstudio' | 'napa' | 'xai' | 'custom';
 
 export type AiConfig = {
   preset: AiPreset;
@@ -128,7 +128,8 @@ export function resolveEditorFontFamily(id: EditorFontId): string {
 
 export const DEFAULT_PREFERENCES: Preferences = {
   theme: 'system',
-  aiEnabled: true,
+  // Off until the user opts in. A saved true or false is kept.
+  aiEnabled: false,
   wordWrap: true,
   indentGuides: true,
   highlightCurrentLine: true,
@@ -152,8 +153,14 @@ export const AI_PRESETS: Record<
     baseUrl: 'http://localhost:1234/v1',
     model: 'local-model',
   },
+  napa: {
+    label: 'Napa AI Gateway',
+    baseUrl: 'https://gateway-api.napa-ai.com/v1',
+    // No single catalog model; grok-3 is an editable chat default. API key stays empty.
+    model: 'grok-3',
+  },
   xai: {
-    label: 'xAI',
+    label: 'xAI/SpaceXSI',
     baseUrl: 'https://api.x.ai/v1',
     model: 'grok-3',
   },
@@ -179,6 +186,8 @@ export function normalizePreferences(raw: Partial<Preferences> & Record<string, 
     ...DEFAULT_PREFERENCES,
     ...rest,
     theme: normalizeTheme(rest.theme) ?? DEFAULT_PREFERENCES.theme,
+    aiEnabled:
+      typeof rest.aiEnabled === 'boolean' ? rest.aiEnabled : DEFAULT_PREFERENCES.aiEnabled,
     wordWrap: typeof rest.wordWrap === 'boolean' ? rest.wordWrap : DEFAULT_PREFERENCES.wordWrap,
     indentGuides:
       typeof rest.indentGuides === 'boolean'
@@ -272,7 +281,7 @@ function normalizeFontFamily(value: unknown): EditorFontId {
   return DEFAULT_PREFERENCES.fontFamily;
 }
 
-const VALID_PRESETS = new Set<string>(['lmstudio', 'xai', 'custom']);
+const VALID_PRESETS = new Set<string>(['lmstudio', 'napa', 'xai', 'custom']);
 
 /**
  * Validate an ai.json that may have been hand-edited. Without this an unknown
@@ -309,7 +318,7 @@ export function isAiConfigured(config: AiConfig): boolean {
   const baseUrl = resolveAiBaseUrl(config).trim();
   if (!baseUrl || !config?.model?.trim()) return false;
   const apiKey = config.apiKey?.trim() ?? '';
-  if (config.preset === 'xai' && !apiKey) return false;
+  if ((config.preset === 'xai' || config.preset === 'napa') && !apiKey) return false;
   if (config.preset === 'custom') {
     const local = /localhost|127\.0\.0\.1/i.test(baseUrl);
     if (!local && !apiKey) return false;

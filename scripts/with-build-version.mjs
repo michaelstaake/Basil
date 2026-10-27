@@ -38,6 +38,12 @@ function removeStaleDirs() {
   }
 }
 
+const builderArgs = process.argv.slice(2);
+// `npm run build` / `build:dir` pass --win. Linux `.deb` builds (`--linux`) must
+// not stamp a Windows file version onto the package, and must not delete a
+// leftover win-unpacked directory.
+const buildingWindows = builderArgs.includes('--win');
+
 const pad = (n) => String(n).padStart(2, '0');
 const now = new Date();
 const stamp = [
@@ -52,26 +58,31 @@ const stamp = [
 // File Version (PE Details) = appVersion.buildDatetime, e.g. 1.0.2.20260722165342
 // Product / app version stays package.json "version" (e.g. 1.0.2).
 const buildVersion = `${pkg.version}.${stamp}`;
-console.log(`File version: ${buildVersion}`);
+const cliArgs = [...builderArgs];
+if (buildingWindows) {
+  console.log(`File version: ${buildVersion}`);
+  cliArgs.push(`-c.buildVersion=${buildVersion}`);
+}
 
 const MAX_ATTEMPTS = 3;
 let status = 1;
 
 for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-  removeStaleDirs();
+  if (buildingWindows) removeStaleDirs();
 
   const result = spawnSync(
     process.execPath,
-    [electronBuilderCli, ...process.argv.slice(2), `-c.buildVersion=${buildVersion}`],
+    [electronBuilderCli, ...cliArgs],
     { stdio: 'inherit', cwd: root },
   );
 
   status = result.status ?? 1;
   if (status === 0) break;
 
-  // Only the file-lock failure is worth retrying, and it always leaves the
-  // half-extracted win-unpacked.tmp behind. Anything else (a config error, a
-  // missing binary) would just fail again more slowly.
+  // Only the Windows file-lock failure is worth retrying, and it always leaves
+  // the half-extracted win-unpacked.tmp behind. Linux deb builds never create
+  // that directory, so a real failure there is not retried. Anything else (a
+  // config error, a missing binary) would just fail again more slowly.
   const lockFailure = existsSync(path.join(root, 'release', 'win-unpacked.tmp'));
   if (!lockFailure) break;
 

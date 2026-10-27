@@ -267,7 +267,7 @@ export function AiSidebar({ enabled, tabs, activeTab }: Props) {
       <aside className="ai-sidebar">
         <div className="ai-disabled">
           AI is disabled. Enable it in Settings to chat with an OpenAI-compatible API
-          (LM Studio, xAI, or custom).
+          (LM Studio, Napa AI Gateway, xAI/SpaceXSI, or custom).
         </div>
       </aside>
     );
